@@ -1,0 +1,26 @@
+name: Daily M3U Update
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Runs every 24 hours at 00:00 UTC
+  workflow_dispatch:      # Optional: allows manual trigger
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Download M3U File
+        run: |
+          curl -L "https://raw.githubusercontent.com/alex4528/m3u/refs/heads/main/jtv.m3u" -o jtv.m3u
+
+      - name: Commit and Push Changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add jtv.m3u
+          git commit -m "Update jtv.m3u on $(date)" || echo "No changes to commit"
+          git push
