@@ -10,22 +10,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Clone target repo (Dhruv0045/Playlist)
+    - name: Set up Git identity
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        git clone https://x-access-token:${{ secrets.PAT_DHRUV0045 }}@github.com/Dhruv0045/Playlist.git
-    - name: Fetch jtv.m3u from alex4528
-      run: |
-        curl -L https://raw.githubusercontent.com/alex4528/m3u/refs/heads/main/jtv.m3u -o Playlist/jiotv.m3u
 
-    - name: Commit & push if changed
+    - name: Clone your target repo (Dhruv0045/Playlist)
+      run: |
+        git clone https://x-access-token:${{ secrets.PAT_DHRUV0045 }}@github.com/Dhruv0045/Playlist.git
+        cd Playlist
+
+    - name: Download jtv.m3u from alex4528/m3u
+      run: |
+        curl -L https://raw.githubusercontent.com/alex4528/m3u/main/jtv.m3u -o Playlist/jiotv.m3u
+
+    - name: Commit & push if jiotv.m3u has changed
       working-directory: Playlist
       run: |
-        if git status --porcelain | grep jiotv.m3u; then
+        if [ -n "$(git status --porcelain jiotv.m3u)" ]; then
           git add jiotv.m3u
-          git commit -m "🔄 Update jiotv.m3u from alex4528/m3u"
-          git push
+          git commit -m "🔄 Auto-update jiotv.m3u from alex4528/m3u"
+          git push https://x-access-token:${{ secrets.PAT_DHRUV0045 }}@github.com/Dhruv0045/Playlist.git HEAD:main
         else
-          echo "No update needed."
+          echo "✅ No changes to commit."
         fi
