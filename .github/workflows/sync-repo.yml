@@ -1,0 +1,31 @@
+name: Sync and Push to Playlist Repo
+
+on:
+  schedule:
+    - cron: '30 1 * * *'  # Runs at 7:00 AM IST (1:30 AM UTC)
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Clone target repo (Dhruv0045/Playlist)
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git clone https://x-access-token:${{ secrets.PAT_DHRUV0045 }}@github.com/Dhruv0045/Playlist.git
+    - name: Fetch jtv.m3u from alex4528
+      run: |
+        curl -L https://raw.githubusercontent.com/alex4528/m3u/refs/heads/main/jtv.m3u -o Playlist/jiotv.m3u
+
+    - name: Commit & push if changed
+      working-directory: Playlist
+      run: |
+        if git status --porcelain | grep jiotv.m3u; then
+          git add jiotv.m3u
+          git commit -m "🔄 Update jiotv.m3u from alex4528/m3u"
+          git push
+        else
+          echo "No update needed."
+        fi
